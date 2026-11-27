@@ -37,6 +37,17 @@
       // on-device database needs (GitHub Pages cannot send them). The app starts only once the
       // service worker controls the page, so the first visit never opens the database twice.
       (function () {
+        // Only one live copy of the page may hold the on-device database files. Browsers can keep
+        // a page alive in the back/forward cache, so release the database when the page is hidden
+        // and start fresh if a hidden copy is ever shown again.
+        var NativeWorker = window.Worker, workers = [];
+        if (NativeWorker) {
+          window.Worker = function (url, options) { var w = new NativeWorker(url, options); workers.push(w); return w; };
+          window.Worker.prototype = NativeWorker.prototype;
+        }
+        var released = false;
+        window.addEventListener("pagehide", function () { released = true; workers.forEach(function (w) { try { w.terminate(); } catch (e) {} }); workers = []; });
+        window.addEventListener("pageshow", function (event) { if (event.persisted || released) location.reload(); });
         var start = function () { var s = document.createElement("script"); s.src = "/s-drl06m8dsr8buk/app.js"; document.body.appendChild(s); };
         var boot = function () {
           if (!("serviceWorker" in navigator)) return start();

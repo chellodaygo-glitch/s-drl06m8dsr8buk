@@ -1,13 +1,14 @@
-// SFM web app service worker. Build 7e2f2327d194.
-const CACHE = "sfm-7e2f2327d194";
+// SFM web app service worker. Build 9658438d5545.
+const CACHE = "sfm-9658438d5545";
 const BASE = "/s-drl06m8dsr8buk/";
 const FILES = ["/s-drl06m8dsr8buk/","/s-drl06m8dsr8buk/app.js","/s-drl06m8dsr8buk/icon-180.png","/s-drl06m8dsr8buk/icon-192.png","/s-drl06m8dsr8buk/icon-512.png","/s-drl06m8dsr8buk/manifest.webmanifest","/s-drl06m8dsr8buk/sqlite.wasm","/s-drl06m8dsr8buk/worker.js"];
-const isolate = (response) => {
+const isolate = (response, navigation) => {
   if (!response || response.status === 0 || response.type === "opaque") return response;
   const headers = new Headers(response.headers);
   headers.set("Cross-Origin-Opener-Policy", "same-origin");
   headers.set("Cross-Origin-Embedder-Policy", "require-corp");
   headers.set("Cross-Origin-Resource-Policy", "same-origin");
+  if (navigation) headers.set("Cache-Control", "no-store");
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 };
 self.addEventListener("install", (event) => {
@@ -25,8 +26,8 @@ self.addEventListener("fetch", (event) => {
     const cache = await caches.open(CACHE);
     const key = request.mode === "navigate" ? BASE : url.pathname;
     const hit = await cache.match(key);
-    if (hit) return isolate(hit);
-    try { return isolate(await fetch(request)); }
-    catch (error) { const shell = await cache.match(BASE); if (shell && request.mode === "navigate") return isolate(shell); throw error; }
+    if (hit) return isolate(hit, request.mode === "navigate");
+    try { return isolate(await fetch(request), request.mode === "navigate"); }
+    catch (error) { const shell = await cache.match(BASE); if (shell && request.mode === "navigate") return isolate(shell, true); throw error; }
   })());
 });
