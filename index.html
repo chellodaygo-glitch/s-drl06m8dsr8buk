@@ -34,19 +34,24 @@
     <meta name="theme-color" content="#ffffff" />
     <script>
       // The service worker makes the app work offline and adds the browser isolation headers the
-      // on-device database needs (GitHub Pages cannot send them). The first visit reloads once.
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/s-drl06m8dsr8buk/sw.js", { scope: "/s-drl06m8dsr8buk/" }).then(function (reg) {
-          if (!navigator.serviceWorker.controller) {
-            var done = false;
-            var go = function () { if (!done) { done = true; location.reload(); } };
-            navigator.serviceWorker.addEventListener("controllerchange", go);
-            navigator.serviceWorker.ready.then(function () { if (navigator.serviceWorker.controller) go(); });
-          }
-          reg.update().catch(function () {});
-          if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
-        }).catch(function () {});
-      }
+      // on-device database needs (GitHub Pages cannot send them). The app starts only once the
+      // service worker controls the page, so the first visit never opens the database twice.
+      (function () {
+        var start = function () { var s = document.createElement("script"); s.src = "/s-drl06m8dsr8buk/app.js"; document.body.appendChild(s); };
+        var boot = function () {
+          if (!("serviceWorker" in navigator)) return start();
+          var reloaded = false;
+          var reload = function () { if (!reloaded) { reloaded = true; location.reload(); } };
+          navigator.serviceWorker.register("/s-drl06m8dsr8buk/sw.js", { scope: "/s-drl06m8dsr8buk/" }).then(function (reg) {
+            if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+            if (navigator.serviceWorker.controller) { reg.update().catch(function () {}); return start(); }
+            navigator.serviceWorker.addEventListener("controllerchange", reload);
+            navigator.serviceWorker.ready.then(function () { setTimeout(function () { if (navigator.serviceWorker.controller) reload(); }, 300); });
+            setTimeout(function () { if (!reloaded && !navigator.serviceWorker.controller) start(); }, 8000);
+          }).catch(start);
+        };
+        if (document.body) boot(); else document.addEventListener("DOMContentLoaded", boot);
+      })();
     </script>
   </head>
 
@@ -55,6 +60,5 @@
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
-  <script src="/s-drl06m8dsr8buk/app.js" defer></script>
 </body>
 </html>

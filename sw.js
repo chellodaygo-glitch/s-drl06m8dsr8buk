@@ -1,5 +1,5 @@
-// SFM web app service worker. Build eeea79a1a761.
-const CACHE = "sfm-eeea79a1a761";
+// SFM web app service worker. Build 7e2f2327d194.
+const CACHE = "sfm-7e2f2327d194";
 const BASE = "/s-drl06m8dsr8buk/";
 const FILES = ["/s-drl06m8dsr8buk/","/s-drl06m8dsr8buk/app.js","/s-drl06m8dsr8buk/icon-180.png","/s-drl06m8dsr8buk/icon-192.png","/s-drl06m8dsr8buk/icon-512.png","/s-drl06m8dsr8buk/manifest.webmanifest","/s-drl06m8dsr8buk/sqlite.wasm","/s-drl06m8dsr8buk/worker.js"];
 const isolate = (response) => {
